@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — HackFusion 2026</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/auth.css" />
+  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="admin-page">
+
+  <!-- Custom Cursor -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-follower" id="cursorFollower"></div>
+
+  <!-- Admin Login Gate -->
+  <div class="admin-gate" id="adminGate">
+    <div class="auth-bg">
+      <div class="auth-orb orb-purple"></div>
+      <div class="auth-orb orb-teal"></div>
+    </div>
+    <div class="auth-card" style="max-width:420px;">
+      <div class="auth-card-header">
+        <div class="auth-icon">🛡️</div>
+        <h1 class="auth-title">Admin Access</h1>
+        <p class="auth-subtitle">Restricted area. Admin credentials required.</p>
+      </div>
+      <form id="adminLoginForm" novalidate>
+        <div class="form-group-auth">
+          <label>Admin Email</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="gate-email" placeholder="admin@hackfusion.dev" required />
+          </div>
+        </div>
+        <div class="form-group-auth">
+          <label>Admin Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="gate-password" placeholder="Admin password" required />
+            <button type="button" class="toggle-pw" onclick="togglePw('gate-password',this)">👁</button>
+          </div>
+        </div>
+        <div class="login-error hidden" id="gateError">⚠️ Invalid admin credentials.</div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <span>🛡️ Enter Admin Panel</span>
+          <div class="btn-glow"></div>
+        </button>
+      </form>
+      <p class="auth-switch" style="text-align:center;margin-top:1rem;">
+        <a href="index.html">← Back to Home</a>
+      </p>
+      <div class="demo-hint" style="margin-top:1rem;">
+        Demo: <code>admin@hackfusion.dev</code> / <code>admin123</code>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN DASHBOARD (hidden until logged in) ===== -->
+  <div class="admin-dashboard hidden" id="adminDashboard">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-logo">
+        <span class="logo-bracket">&lt;</span>HF<span class="logo-bracket">/&gt;</span>
+        <span class="sidebar-role">Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link active" data-panel="overview" onclick="showPanel('overview',this)">
+          <span>📊</span> Overview
+        </a>
+        <a href="#" class="sidebar-link" data-panel="participants" onclick="showPanel('participants',this)">
+          <span>👥</span> Participants
+        </a>
+        <a href="#" class="sidebar-link" data-panel="teams" onclick="showPanel('teams',this)">
+          <span>🏆</span> Teams
+        </a>
+        <a href="#" class="sidebar-link" data-panel="submissions" onclick="showPanel('submissions',this)">
+          <span>📁</span> Submissions
+        </a>
+        <a href="#" class="sidebar-link" data-panel="announcements" onclick="showPanel('announcements',this)">
+          <span>📢</span> Announcements
+        </a>
+        <a href="#" class="sidebar-link" data-panel="rounds" onclick="showPanel('rounds',this)">
+          <span>🔄</span> Rounds
+        </a>
+        <a href="#" class="sidebar-link" data-panel="problem-statements" onclick="showPanel('problem-statements',this)">
+          <span>📝</span> Problem Statements
+        </a>
+        <a href="#" class="sidebar-link" data-panel="prizes" onclick="showPanel('prizes',this)">
+          <span>🏅</span> Prizes
+        </a>
+        <a href="#" class="sidebar-link" data-panel="sponsors" onclick="showPanel('sponsors',this)">
+          <span>🤝</span> Sponsors
+        </a>
+        <a href="#" class="sidebar-link" data-panel="settings" onclick="showPanel('settings',this)">
+          <span>⚙️</span> Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="sidebar-logout" onclick="adminLogout()">🚪 Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="admin-content">
+
+      <!-- Top bar -->
+      <header class="admin-topbar">
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
+        <div class="topbar-title" id="topbarTitle">Overview</div>
+        <div class="topbar-right">
+          <div class="topbar-search">
+            <span>🔍</span>
+            <input type="text" placeholder="Search participants, teams..." id="globalSearch" oninput="globalSearchFn(this.value)" />
+          </div>
+          <div class="topbar-admin">
+            <div class="admin-avatar">A</div>
+            <span>Admin</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ====== OVERVIEW PANEL ====== -->
+      <section class="admin-panel active" id="panel-overview">
+        <div class="panel-heading">
+          <h2>Dashboard Overview</h2>
+          <span class="panel-badge">Live</span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card" data-color="purple">
+            <div class="stat-card-icon">👥</div>
+            <div class="stat-card-info">
+              <div class="stat-card-num" id="stat-participants">0</div>
+              <div class="stat-card-label">Total Participants</div>
+            </div>
+            <div class="stat-card-trend up">+12 today</div>
+          </div>
+          <div class="stat-card" data-color="teal">
+            <div class="stat-card-icon">🏆</div>
+            <div class="stat-card-info">
+              <div class="stat-card-num" id="stat-teams">0</div>
+              <div class="stat-card-label">Registered Teams</div>
+            </div>
+            <div class="stat-card-trend up">+3 today</div>
+          </div>
+          <div class="stat-card" data-color="pink">
+            <div class="stat-card-icon">📁</div>
+            <div class="stat-card-info">
+              <div class="stat-card-num" id="stat-submissions">0</div>
+              <div class="stat-card-label">Submissions</div>
+            </div>
+            <div class="stat-card-trend neutral">Round 1 open</div>
+          </div>
+          <div class="stat-card" data-color="orange">
+            <div class="stat-card-icon">🌍</div>
+            <div class="stat-card-info">
+              <div class="stat-card-num" id="stat-countries">0</div>
+              <div class="stat-card-label">Countries</div>
+            </div>
+            <div class="stat-card-trend up">+2 new</div>
+          </div>
+        </div>
+
+        <div class="overview-grid">
+          <!-- Registration chart -->
+          <div class="admin-widget">
+            <div class="widget-header">
+              <h3>Registrations Over Time</h3>
+              <span class="widget-tag">Last 7 days</span>
+            </div>
+            <div class="bar-chart" id="regChart">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Track distribution -->
+          <div class="admin-widget">
+            <div class="widget-header">
+              <h3>Track Distribution</h3>
+            </div>
+            <div class="track-dist" id="trackDist">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Recent activity -->
+          <div class="admin-widget full-width">
+            <div class="widget-header">
+              <h3>Recent Activity</h3>
+              <button class="widget-btn" onclick="refreshActivity()">🔄 Refresh</button>
+            </div>
+            <div class="activity-feed" id="activityFeed">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== PARTICIPANTS PANEL ====== -->
+      <section class="admin-panel" id="panel-participants">
+        <div class="panel-heading">
+          <h2>Participants</h2>
+          <div class="panel-actions">
+            <select class="filter-select" id="filterTrack" onchange="filterParticipants()">
+              <option value="">All Tracks</option>
+              <option value="ai">AI/ML</option>
+              <option value="web3">Web3</option>
+              <option value="health">HealthTech</option>
+              <option value="climate">Climate</option>
+              <option value="gamefi">GameFi</option>
+              <option value="open">Open</option>
+            </select>
+            <select class="filter-select" id="filterLevel" onchange="filterParticipants()">
+              <option value="">All Levels</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <button class="admin-btn" onclick="exportCSV()">📥 Export CSV</button>
+          </div>
+        </div>
+
+        <div class="search-bar-admin">
+          <span>🔍</span>
+          <input type="text" placeholder="Search by name, email, college..." id="participantSearch" oninput="filterParticipants()" />
+        </div>
+
+        <div class="admin-table-wrap">
+          <table class="admin-table" id="participantTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>College</th>
+                <th>Track</th>
+                <th>Level</th>
+                <th>Team</th>
+                <th>Registered</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="participantBody">
+              <!-- filled by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="table-footer">
+          <span id="participantCount">Showing 0 participants</span>
+          <div class="pagination" id="participantPagination"></div>
+        </div>
+      </section>
+
+      <!-- ====== TEAMS PANEL ====== -->
+      <section class="admin-panel" id="panel-teams">
+        <div class="panel-heading">
+          <h2>Teams</h2>
+          <div class="panel-actions">
+            <select class="filter-select" id="filterTeamStatus" onchange="filterTeams()">
+              <option value="">All Status</option>
+              <option value="complete">Complete (4)</option>
+              <option value="partial">Partial (2-3)</option>
+              <option value="solo">Solo (1)</option>
+            </select>
+            <button class="admin-btn" onclick="exportTeamsCSV()">📥 Export</button>
+          </div>
+        </div>
+
+        <div class="teams-grid" id="teamsGrid">
+          <!-- filled by JS -->
+        </div>
+      </section>
+
+      <!-- ====== SUBMISSIONS PANEL ====== -->
+      <section class="admin-panel" id="panel-submissions">
+        <div class="panel-heading">
+          <h2>Submissions</h2>
+          <div class="panel-actions">
+            <span class="round-indicator online">Round 1 — Online</span>
+          </div>
+        </div>
+        <div class="empty-state">
+          <div class="empty-icon">📂</div>
+          <h3>No submissions yet</h3>
+          <p>Submissions will appear here once Round 1 opens officially on Sept 1, 2026.</p>
+        </div>
+      </section>
+
+      <!-- ====== ANNOUNCEMENTS PANEL ====== -->
+      <section class="admin-panel" id="panel-announcements">
+        <div class="panel-heading">
+          <h2>Announcements</h2>
+        </div>
+
+        <div class="announcement-composer">
+          <h3>New Announcement</h3>
+          <div class="form-group-auth">
+            <label>Title</label>
+            <div class="input-wrap">
+              <input type="text" id="ann-title" placeholder="Announcement title..." />
+            </div>
+          </div>
+          <div class="form-group-auth">
+            <label>Message</label>
+            <div class="input-wrap textarea-wrap">
+              <textarea id="ann-body" rows="4" placeholder="Write your announcement here..."></textarea>
+            </div>
+          </div>
+          <div class="ann-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="ann-email" />
+              <span class="checkmark"></span>
+              Send via Email to all participants
+            </label>
+            <select class="filter-select" id="ann-type">
+              <option value="info">ℹ️ Info</option>
+              <option value="warning">⚠️ Warning</option>
+              <option value="success">✅ Success</option>
+              <option value="urgent">🚨 Urgent</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="postAnnouncement()">
+            <span>📢 Post Announcement</span>
+            <div class="btn-glow"></div>
+          </button>
+        </div>
+
+        <div class="announcements-list" id="announcementsList">
+          <!-- filled by JS -->
+        </div>
+      </section>
+
+      <!-- ====== ROUNDS PANEL ====== -->
+      <section class="admin-panel" id="panel-rounds">
+        <div class="panel-heading">
+          <h2>Round Management</h2>
+        </div>
+
+        <div class="rounds-management">
+          <div class="round-mgmt-card active-round">
+            <div class="round-mgmt-header">
+              <h3>🌐 Round 1 — Online</h3>
+              <span class="status-pill active">Active</span>
+            </div>
+            <div class="round-mgmt-stats">
+              <div><strong id="r1-teams">0</strong> teams registered</div>
+              <div><strong id="r1-subs">0</strong> submissions</div>
+            </div>
+            <div class="round-mgmt-dates">
+              <span>📅 Registration Open · Till Nov 4, 2026</span>
+            </div>
+            <div class="round-mgmt-actions">
+              <button class="admin-btn" onclick="viewRound1Entries()">View Entries</button>
+              <button class="admin-btn danger" onclick="confirmCloseRound1()">Close Round 1</button>
+            </div>
+          </div>
+
+          <div class="round-mgmt-card locked-round">
+            <div class="round-mgmt-header">
+              <h3>🏟️ Round 2 — Offline</h3>
+              <span class="status-pill locked">Locked</span>
+            </div>
+            <p style="color:var(--text-dim);font-size:0.9rem;margin:0.5rem 0 1rem;">
+              Round 2 will be unlocked after Round 1 closes. Shortlisted teams will be notified via email.
+            </p>
+            <div class="round-mgmt-actions">
+              <button class="admin-btn" onclick="shortlistTeams()" id="shortlistBtn" disabled>
+                🏆 Shortlist Teams for Round 2
+              </button>
+              <button class="admin-btn" onclick="sendRound2Emails()" id="r2EmailBtn" disabled>
+                ✉️ Send Round 2 Invites
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====== PROBLEM STATEMENTS PANEL ====== -->
+      <section class="admin-panel" id="panel-problem-statements">
+        <div class="panel-heading">
+          <h2>Problem Statements</h2>
+          <div class="panel-actions">
+            <a href="index.html#tracks" target="_blank" class="admin-btn">🔗 Preview on Site</a>
+          </div>
+        </div>
+
+        <!-- Composer -->
+        <div class="announcement-composer" style="margin-bottom:1.5rem;">
+          <h3>Add Problem Statement</h3>
+          <div class="form-row-auth" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+            <div class="form-group-auth">
+              <label>Track</label>
+              <div class="input-wrap">
+                <select id="ps-track">
+                  <option value="ai">🤖 AI & Machine Learning</option>
+                  <option value="web3">⛓️ Web3 & Blockchain</option>
+                  <option value="health">🏥 HealthTech</option>
+                  <option value="climate">🌱 Climate & Sustainability</option>
+                  <option value="gamefi">🎮 GameFi & Metaverse</option>
+                  <option value="open">🔓 Open Innovation</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group-auth">
+              <label>Source / Sponsor <small style="font-weight:400;color:var(--text-dim);">(optional)</small></label>
+              <div class="input-wrap">
+                <span class="input-icon">🏢</span>
+                <input type="text" id="ps-source" placeholder="e.g. Google, OpenAI…" />
+              </div>
+            </div>
+          </div>
+          <div class="form-group-auth">
+            <label>Problem Statement</label>
+            <div class="input-wrap textarea-wrap">
+              <textarea id="ps-text" rows="3" placeholder="Describe the problem clearly — participants will see this under the track card on the homepage…"></textarea>
+            </div>
+          </div>
+          <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="addProblemStatement()">
+              <span>➕ Add Statement</span>
+              <div class="btn-glow"></div>
+            </button>
+            <span style="font-size:0.8rem;color:var(--text-dim);">Saved statements appear live on the homepage immediately.</span>
+          </div>
+        </div>
+
+        <!-- Filter by track -->
+        <div class="panel-actions" style="margin-bottom:1rem;">
+          <select class="filter-select" id="psFilterTrack" onchange="renderPSList()">
+            <option value="">All Tracks</option>
+            <option value="ai">AI/ML</option>
+            <option value="web3">Web3</option>
+            <option value="health">HealthTech</option>
+            <option value="climate">Climate</option>
+            <option value="gamefi">GameFi</option>
+            <option value="open">Open</option>
+          </select>
+        </div>
+
+        <!-- List -->
+        <div id="psList"><!-- filled by JS --></div>
+      </section>
+
+      <!-- ====== PRIZES PANEL ====== -->
+      <section class="admin-panel" id="panel-prizes">
+        <div class="panel-heading">
+          <h2>Prizes</h2>
+          <div class="panel-actions">
+            <a href="index.html#prizes" target="_blank" class="admin-btn">🔗 Preview on Site</a>
+            <button class="admin-btn" onclick="resetPrizesToDefault()">↩ Reset Defaults</button>
+          </div>
+        </div>
+
+        <!-- Main prizes -->
+        <div class="settings-card" style="margin-bottom:1.5rem;">
+          <h3 style="margin-bottom:1rem;">Main Prize Podium</h3>
+          <div id="mainPrizesEditor"><!-- filled by JS --></div>
+          <button class="btn btn-primary" style="margin-top:1rem;" onclick="saveMainPrizes()">
+            <span>💾 Save Podium</span><div class="btn-glow"></div>
+          </button>
+        </div>
+
+        <!-- Track prizes -->
+        <div class="settings-card">
+          <h3 style="margin-bottom:1rem;">Track Prize Amounts</h3>
+          <div id="trackPrizesEditor"><!-- filled by JS --></div>
+          <button class="btn btn-primary" style="margin-top:1rem;" onclick="saveTrackPrizes()">
+            <span>💾 Save Track Prizes</span><div class="btn-glow"></div>
+          </button>
+        </div>
+      </section>
+
+      <!-- ====== SPONSORS PANEL ====== -->
+      <section class="admin-panel" id="panel-sponsors">
+        <div class="panel-heading">
+          <h2>Sponsors</h2>
+          <div class="panel-actions">
+            <a href="index.html#sponsors" target="_blank" class="admin-btn">🔗 Preview on Site</a>
+          </div>
+        </div>
+
+        <!-- Add sponsor -->
+        <div class="announcement-composer" style="margin-bottom:1.5rem;">
+          <h3>Add Sponsor</h3>
+          <div class="form-row-auth" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1rem;">
+            <div class="form-group-auth">
+              <label>Sponsor Name</label>
+              <div class="input-wrap">
+                <span class="input-icon">🏢</span>
+                <input type="text" id="sp-name" placeholder="e.g. Google" />
+              </div>
+            </div>
+            <div class="form-group-auth">
+              <label>Tier</label>
+              <div class="input-wrap">
+                <select id="sp-tier">
+                  <option value="gold">🥇 Gold</option>
+                  <option value="silver">🥈 Silver</option>
+                  <option value="bronze">🥉 Bronze</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group-auth">
+              <label>Website <small style="font-weight:400;color:var(--text-dim);">(optional)</small></label>
+              <div class="input-wrap">
+                <span class="input-icon">🌐</span>
+                <input type="url" id="sp-url" placeholder="https://..." />
+              </div>
+            </div>
+          </div>
+          <div class="form-group-auth">
+            <label>Description <small style="font-weight:400;color:var(--text-dim);">(optional)</small></label>
+            <div class="input-wrap textarea-wrap">
+              <textarea id="sp-desc" rows="2" placeholder="Short description shown on the sponsors page…"></textarea>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addSponsor()">
+            <span>➕ Add Sponsor</span>
+            <div class="btn-glow"></div>
+          </button>
+        </div>
+
+        <!-- Filter -->
+        <div class="panel-actions" style="margin-bottom:1rem;">
+          <select class="filter-select" id="spFilterTier" onchange="renderSponsorList()">
+            <option value="">All Tiers</option>
+            <option value="gold">Gold</option>
+            <option value="silver">Silver</option>
+            <option value="bronze">Bronze</option>
+          </select>
+        </div>
+
+        <!-- Sponsor list -->
+        <div class="sponsor-admin-grid" id="sponsorAdminList"><!-- filled by JS --></div>
+      </section>
+
+      <!-- ====== SETTINGS PANEL ====== -->
+      <section class="admin-panel" id="panel-settings">
+        <div class="panel-heading">
+          <h2>Event Settings</h2>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h3>Registration</h3>
+            <div class="setting-row">
+              <span>Registration Open</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-reg" checked onchange="saveSetting('registration', this.checked)" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <span>Team Invites Enabled</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-invites" checked onchange="saveSetting('invites', this.checked)" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-row">
+              <span>Max Team Size</span>
+              <input type="number" class="setting-input" value="4" min="2" max="6" id="maxTeamSize" />
+            </div>
+            <div class="setting-row">
+              <span>Min Team Size</span>
+              <input type="number" class="setting-input" value="2" min="1" max="4" id="minTeamSize" />
+            </div>
+          </div>
+          <div class="settings-card">
+            <h3>Event Info</h3>
+            <div class="setting-row column">
+              <span>Event Name</span>
+              <input type="text" class="setting-input full" value="HackFusion 2026" id="eventName" />
+            </div>
+            <div class="setting-row column">
+              <span>Round 1 End Date</span>
+              <input type="date" class="setting-input full" value="2026-11-04" id="r1EndDate" />
+            </div>
+            <div class="setting-row column">
+              <span>Admin Email</span>
+              <input type="email" class="setting-input full" value="admin@hackfusion.dev" id="adminEmail" />
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="saveSettings()" style="margin-top:1.5rem;">
+          <span>💾 Save Settings</span>
+          <div class="btn-glow"></div>
+        </button>
+      </section>
+
+    </div><!-- /admin-content -->
+  </div><!-- /admin-dashboard -->
+
+  <!-- Participant Detail Modal -->
+  <div class="modal-overlay hidden" id="participantModal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeModal('participantModal')">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- Confirm Modal -->
+  <div class="modal-overlay hidden" id="confirmModal">
+    <div class="modal-card small">
+      <h3 id="confirmTitle">Confirm Action</h3>
+      <p id="confirmMsg" style="color:var(--text-dim);margin:1rem 0;"></p>
+      <div style="display:flex;gap:1rem;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancel</button>
+        <button class="btn btn-primary" id="confirmAction">
+          <span>Confirm</span><div class="btn-glow"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/canvas-bg.js"></script>
+  <script src="js/auth-shared.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>
